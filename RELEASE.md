@@ -1,2 +1,2 @@
-python -m build --sdist --wheel --outdir dist/ kia_uvo_api/
+python3 -m build --sdist --wheel --outdir dist/ .
 twine upload dist/*
