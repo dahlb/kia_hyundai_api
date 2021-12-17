@@ -6,11 +6,10 @@ here = pathlib.Path(__file__).parent.resolve()
 # Get the long description from the README file
 LONG_DESCRIPTION = (here / "README.md").read_text(encoding="utf-8")
 
-VERSION = "0.0.1"
+VERSION = "0.0.2"
 
 # Setting up
 setup(
-    # the name must match the folder name "verysimplemodule"
     name="kia_hyundai_api",
     version=VERSION,
     author="Brendan Dahl",
@@ -20,7 +19,7 @@ setup(
     long_description_content_type="text/markdown",
     package_dir={"": "src"},
     packages=find_packages(where="src"),
-    install_requires=["aiohttp>=3.8.1"],
+    install_requires=["aiohttp>=3.8.1", "pytz"],
     keywords=["Kia", "Uvo", "Api", "Hyundai", "Bluelink"],
     classifiers=[
         "Development Status :: 4 - Beta",
