@@ -175,7 +175,7 @@ class UsHyundai:
         response_json = await response.json()
         return response_json["vehicleStatus"]
 
-    def get_location(
+    async def get_location(
         self, username: str, pin: str, access_token: str, vehicle_vin: str
     ):
         url = API_URL + "rcs/rfc/findMyCar"
