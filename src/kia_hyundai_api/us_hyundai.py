@@ -4,6 +4,7 @@ import time
 from aiohttp import ClientSession, ClientResponse, ClientError
 
 from .rate_error import RateError
+from .auth_error import AuthError
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -31,6 +32,11 @@ def request_with_logging(func):
                 and response_json.get("errorSubCode", "") == "HT_534"
             ):
                 raise RateError
+            if (
+                    response_json["errorCode"] == 502
+                    and response_json.get("errorSubCode", "") == "IDM_401_1"
+            ):
+                raise AuthError
             raise ClientError(f"api error:{response_json}")
 
     return request_with_logging_wrapper
@@ -83,7 +89,7 @@ def _api_headers(
 class UsHyundai:
     def __init__(self, client_session: ClientSession = None):
         if client_session is None:
-            self.api_session = ClientSession(raise_for_status=True)
+            self.api_session = ClientSession(raise_for_status=False)
         else:
             self.api_session = client_session
 
