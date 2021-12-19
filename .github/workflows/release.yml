@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     branches:
-      - '**'
+      - 'master'
     tags-ignore:
       - '*.*'
 
@@ -17,7 +17,7 @@ jobs:
         id: semantic_release_info
         uses: jossef/action-semantic-release-info@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN2 }}
 
       - name: Update Version and Commit
         if: ${{steps.semantic_release_info.outputs.version != ''}}
@@ -34,7 +34,7 @@ jobs:
         if: ${{steps.semantic_release_info.outputs.version != ''}}
         uses: ad-m/github-push-action@v0.6.0
         with:
-          github_token: ${{ secrets.TOKEN }}
+          github_token: ${{ secrets.TOKEN2 }}
           tags: true
 
       - name: Create GitHub Release
