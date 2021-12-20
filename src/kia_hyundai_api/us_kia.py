@@ -10,7 +10,7 @@ import time
 
 from aiohttp import ClientSession, ClientResponse, ClientError
 
-from .auth_error import AuthError
+from .errors import AuthError
 
 _LOGGER = logging.getLogger(__name__)
 

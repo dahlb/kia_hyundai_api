@@ -3,8 +3,7 @@ import logging
 import time
 from aiohttp import ClientSession, ClientResponse, ClientError
 
-from .rate_error import RateError
-from .auth_error import AuthError
+from .errors import AuthError, RateError
 
 _LOGGER = logging.getLogger(__name__)
 

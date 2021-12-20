@@ -4,8 +4,7 @@ import time
 from abc import ABC, abstractmethod
 from aiohttp import ClientSession, ClientResponse, ClientError
 
-from .auth_error import AuthError
-from .rate_error import RateError
+from .errors import RateError, AuthError
 from .const import CA_TEMP_RANGE
 
 _LOGGER = logging.getLogger(__name__)
@@ -136,7 +135,7 @@ class Ca(ABC):
         response_json = await response.json()
         access_token = response_json["result"]["accessToken"]
         refresh_token = response_json["result"]["refreshToken"]
-        return {"access_token": access_token, "refresh_token": refresh_token}
+        return access_token, refresh_token
 
     async def get_vehicles(self, access_token: str):
         """
