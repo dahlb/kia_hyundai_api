@@ -17,8 +17,7 @@ logger.addHandler(ch)
 
 async def testing(ca_api: Ca):
     pin = "PIN"
-    login_response = await ca_api.login("user", "pass")
-    access_token = login_response["access_token"]
+    access_token, _ = await ca_api.login("user", "pass")
     vehicles = await ca_api.get_vehicles(access_token)
     vehicle_id = vehicles["vehicles"][0]["vehicleId"]
     await ca_api.get_cached_vehicle_status(access_token=access_token, vehicle_id=vehicle_id)
