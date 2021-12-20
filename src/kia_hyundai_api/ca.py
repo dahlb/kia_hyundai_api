@@ -124,7 +124,7 @@ class Ca(ABC):
         headers = self._api_headers(access_token, vehicle_id, pin_token, xid)
         return await self.api_session.post(url=url, json=json_body, headers=headers)
 
-    async def login(self, username: str, password: str) -> {str: str}:
+    async def login(self, username: str, password: str) -> (str, str):
         url = self.api_url + "lgn"
         json_body = {"loginId": username, "password": password}
         response: ClientResponse = (
