@@ -1,5 +1,7 @@
 Api Wrapper for Kia/Hyundai API using async in python
 
+a lot of this is a port of [Bluelinky](https://github.com/Hacksore/bluelinky) from node
+
 # US Kia
 
 - login
