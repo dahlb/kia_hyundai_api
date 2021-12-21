@@ -1,6 +1,6 @@
-Api Wrapper for Kia/Hyundai API using async in python
+Api Wrapper for Kia/Hyundai API using async in python, this was inspired by [this guide](https://developers.home-assistant.io/docs/api_lib_index) to be a lightweight wrapper, with simple error handling.
 
-a lot of this is a port of [Bluelinky](https://github.com/Hacksore/bluelinky) from node
+a lot of this is a port of [Bluelinky](https://github.com/Hacksore/bluelinky) from node.
 
 # US Kia
 
