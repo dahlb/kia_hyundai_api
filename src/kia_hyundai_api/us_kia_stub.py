@@ -25,5 +25,6 @@ async def testing():
     identifier = vehicles["vehicleSummary"][0]["vehicleIdentifier"]
     key = vehicles["vehicleSummary"][0]["vehicleKey"]
     await api.get_cached_vehicle_status(session_id=session_id, vehicle_key=key)
+    await api.lock(session_id=session_id, vehicle_key=key)
 
 asyncio.run(testing())

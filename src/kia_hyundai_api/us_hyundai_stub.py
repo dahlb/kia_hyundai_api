@@ -22,12 +22,13 @@ async def testing():
     username = "USER"
     pin = "PIN"
     try:
-        access_token, = await api.login(username=username, password="pass", pin=pin)
+        access_token, refresh_token, expires_in = await api.login(username=username, password="pass", pin=pin)
         vehicles = await api.get_vehicles(username=username, pin=pin, access_token=access_token)
         vin = vehicles["enrolledVehicleDetails"][0]["vin"]
-        # regid = vehicles["enrolledVehicleDetails"][0]["regid"]
+        reg_id = vehicles["enrolledVehicleDetails"][0]["regid"]
         await api.get_cached_vehicle_status(username=username, pin=pin, access_token=access_token, vehicle_vin=vin)
         await api.get_location(username=username, pin=pin, access_token=access_token, vehicle_vin=vin)
+        await api.lock(username=username, pin=pin, access_token=access_token, vehicle_vin=vin, vehicle_regid=reg_id)
     finally:
         await api.cleanup_client_session()
 

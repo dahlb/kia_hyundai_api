@@ -25,5 +25,6 @@ async def testing(ca_api: Ca):
         await ca_api.get_next_service_status(access_token=access_token, vehicle_id=vehicle_id)
         pin_token = await ca_api.get_pin_token(access_token=access_token, pin=pin)
         await ca_api.get_location(access_token=access_token, vehicle_id=vehicle_id, pin=pin, pin_token=pin_token)
+        await ca_api.lock(access_token=access_token, vehicle_id=vehicle_id, pin=pin, pin_token=pin_token)
     finally:
         await ca_api.cleanup_client_session()
