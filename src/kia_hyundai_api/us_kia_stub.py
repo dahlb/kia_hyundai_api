@@ -8,7 +8,7 @@ path_root = Path(__file__).parents[2]
 sys.path.append(str(path_root))
 from src.kia_hyundai_api import UsKia
 
-logger = logging.getLogger("kia_hyundai_api.us_kia")
+logger = logging.getLogger("src.kia_hyundai_api")
 logger.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
