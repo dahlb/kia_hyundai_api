@@ -116,10 +116,11 @@ class Ca(ABC):
         pin_token: str = None,
         xid: str = None,
     ) -> ClientResponse:
-        pin = json_body.get("pin")
-        if pin is not None and pin_token is None and not url.endswith("vrfypin"):
-            pin_token_response = await self.get_pin_token(access_token, pin)
-            pin_token = pin_token_response["pAuth"]
+        if json_body is not None:
+            pin = json_body.get("pin")
+            if pin is not None and pin_token is None and not url.endswith("vrfypin"):
+                pin_token_response = await self.get_pin_token(access_token, pin)
+                pin_token = pin_token_response["pAuth"]
 
         headers = self._api_headers(access_token, vehicle_id, pin_token, xid)
         return await self.api_session.post(url=url, json=json_body, headers=headers)
