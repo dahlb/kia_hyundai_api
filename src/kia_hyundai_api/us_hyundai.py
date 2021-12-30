@@ -222,7 +222,7 @@ class UsHyundai:
     ) -> dict[str, any]:
         url = API_URL + "rcs/rdo/off"
         extra_headers = {"registrationId": vehicle_regid, "APPCLOUD-VIN": vehicle_vin}
-        json_body = {"userName": self.username, "vin": vehicle_vin}
+        json_body = {"userName": username, "vin": vehicle_vin}
         response = await self._post_request_with_logging_and_errors_raised(
             username=username,
             pin=pin,
@@ -245,7 +245,7 @@ class UsHyundai:
     ) -> dict[str, any]:
         url = API_URL + "rcs/rdo/on"
         extra_headers = {"APPCLOUD-VIN": vehicle_vin}
-        json_body = {"userName": self.username, "vin": vehicle_vin}
+        json_body = {"userName": username, "vin": vehicle_vin}
         response = await self._post_request_with_logging_and_errors_raised(
             username=username,
             pin=pin,
@@ -280,7 +280,7 @@ class UsHyundai:
             "defrost": defrost,
             "heating1": int(heating),
             "igniOnDuration": duration,
-            "username": self.username,
+            "username": username,
             "vin": vehicle_vin,
         }
         response = await self._post_request_with_logging_and_errors_raised(
