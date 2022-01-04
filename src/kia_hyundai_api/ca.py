@@ -5,16 +5,10 @@ from abc import ABC, abstractmethod
 from aiohttp import ClientSession, ClientResponse, ClientError
 
 from .errors import RateError, AuthError
-from .const import CA_TEMP_RANGE
+from .const import CA_TEMP_RANGE_ICE_C, CA_TEMP_RANGE_EV_C
+from .util import clean_dictionary_for_logging
 
 _LOGGER = logging.getLogger(__name__)
-
-
-def convert_set_temp_to_api_from_celsius_value(set_temp):
-    set_temp = CA_TEMP_RANGE.index(set_temp)
-    set_temp = hex(set_temp).split("x")
-    set_temp = set_temp[1] + "H"
-    return set_temp.zfill(3).upper()
 
 
 def request_with_logging_and_errors_raised(func):
@@ -27,14 +21,17 @@ def request_with_logging_and_errors_raised(func):
         url = kwargs["url"]
         json_body = kwargs.get("json_body")
         if json_body is not None:
-            _LOGGER.debug(f"sending {url} request with {json_body}")
+            _LOGGER.debug(f"sending {url} request with {clean_dictionary_for_logging(json_body)}")
         else:
             _LOGGER.debug(f"sending {url} request")
         response = await func(*args, **kwargs)
-        _LOGGER.debug(f"response headers:{response.headers}")
-        response_text = await response.text()
-        _LOGGER.debug(f"response text:{response_text}")
-        response_json = await response.json()
+        _LOGGER.debug(f"response headers:{clean_dictionary_for_logging(response.headers)}")
+        try:
+            response_json = await response.json()
+            _LOGGER.debug(f"response json:{clean_dictionary_for_logging(response_json)}")
+        except RuntimeError:
+            response_text = await response.text()
+            _LOGGER.debug(f"response text:{response_text}")
         if response_json["responseHeader"]["responseCode"] == 0:
             return response
         # still need to add error code for expired token
@@ -279,6 +276,10 @@ class Ca(ABC):
         pin_token: str = None,
     ):
         url = self.api_url + "rmtstrt"
+        api_set_temp = CA_TEMP_RANGE_ICE_C.index(set_temp)
+        api_set_temp = hex(api_set_temp).split("x")
+        api_set_temp = api_set_temp[1] + "H"
+        api_set_temp = api_set_temp.zfill(3).upper()
 
         json_body = {
             "setting": {
@@ -288,7 +289,7 @@ class Ca(ABC):
                 "igniOnDuration": duration,
                 "ims": 0,
                 "airTemp": {
-                    "value": convert_set_temp_to_api_from_celsius_value(set_temp),
+                    "value": api_set_temp,
                     "unit": 0,
                     "hvacTempType": 0,
                 },
@@ -317,6 +318,10 @@ class Ca(ABC):
         pin_token: str = None,
     ):
         url = self.api_url + "evc/rfon"
+        api_set_temp = CA_TEMP_RANGE_EV_C.index(set_temp)
+        api_set_temp = hex(api_set_temp).split("x")
+        api_set_temp = api_set_temp[1] + "H"
+        api_set_temp = api_set_temp.zfill(3).upper()
 
         json_body = {
             "hvacInfo": {
@@ -324,7 +329,7 @@ class Ca(ABC):
                 "defrost": defrost,
                 "heating1": int(heating),
                 "airTemp": {
-                    "value": convert_set_temp_to_api_from_celsius_value(set_temp),
+                    "value": api_set_temp,
                     "unit": 0,
                     "hvacTempType": 1,
                 },
