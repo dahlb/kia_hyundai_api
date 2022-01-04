@@ -2,6 +2,7 @@
 import logging
 import asyncio
 
+from getpass import getpass
 from pathlib import Path
 import sys
 path_root = Path(__file__).parents[2]
@@ -19,12 +20,16 @@ logger.addHandler(ch)
 
 async def testing():
     api: UsKia = UsKia()
-    username = "USER"
-    session_id = await api.login(username=username, password="pass")
-    vehicles = await api.get_vehicles(session_id=session_id)
-    identifier = vehicles["vehicleSummary"][0]["vehicleIdentifier"]
-    key = vehicles["vehicleSummary"][0]["vehicleKey"]
-    await api.get_cached_vehicle_status(session_id=session_id, vehicle_key=key)
-    await api.lock(session_id=session_id, vehicle_key=key)
+    username = input("Username: ")
+    password = getpass()
+    try:
+        session_id = await api.login(username=username, password=password)
+        vehicles = await api.get_vehicles(session_id=session_id)
+        identifier = vehicles["vehicleSummary"][0]["vehicleIdentifier"]
+        key = vehicles["vehicleSummary"][0]["vehicleKey"]
+        await api.get_cached_vehicle_status(session_id=session_id, vehicle_key=key)
+        await api.lock(session_id=session_id, vehicle_key=key)
+    finally:
+        await api.cleanup_client_session()
 
 asyncio.run(testing())

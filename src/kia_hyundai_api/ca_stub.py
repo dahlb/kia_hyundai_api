@@ -1,5 +1,6 @@
 import logging
 
+from getpass import getpass
 from pathlib import Path
 import sys
 path_root = Path(__file__).parents[2]
@@ -16,9 +17,11 @@ logger.addHandler(ch)
 
 
 async def testing(ca_api: Ca):
-    pin = "PIN"
+    username = input("Username: ")
+    pin = getpass("Pin: ")
+    password = getpass()
     try:
-        access_token, _ = await ca_api.login("user", "pass")
+        access_token, _ = await ca_api.login(username, password)
         vehicles = await ca_api.get_vehicles(access_token)
         vehicle_id = vehicles["vehicles"][0]["vehicleId"]
         await ca_api.get_cached_vehicle_status(access_token=access_token, vehicle_id=vehicle_id)
