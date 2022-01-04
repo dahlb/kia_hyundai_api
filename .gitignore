@@ -6,4 +6,3 @@ venv/
 dist/
 src/kia_hyundai_api.egg-info/
 build/
-src/kia_hyundai_api/*_stub.py
