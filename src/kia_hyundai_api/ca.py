@@ -179,7 +179,7 @@ class Ca(ABC):
         url = self.api_url + "vrfypin"
         json_body = {"pin": pin}
         response = await self._post_request_with_logging_and_errors_raised(
-            access_token=access_token, url=url, json_body=json_body
+            access_token=access_token, vehicle_id=None, url=url, json_body=json_body
         )
         response_json = await response.json()
         return response_json["result"]
