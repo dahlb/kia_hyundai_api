@@ -5,6 +5,7 @@ import asyncio
 from getpass import getpass
 from pathlib import Path
 import sys
+
 path_root = Path(__file__).parents[2]
 sys.path.append(str(path_root))
 from src.kia_hyundai_api import UsKia
@@ -13,7 +14,7 @@ logger = logging.getLogger("src.kia_hyundai_api")
 logger.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
@@ -31,5 +32,6 @@ async def testing():
         await api.lock(session_id=session_id, vehicle_key=key)
     finally:
         await api.cleanup_client_session()
+
 
 asyncio.run(testing())

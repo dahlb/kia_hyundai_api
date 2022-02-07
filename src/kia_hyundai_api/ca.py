@@ -17,18 +17,25 @@ def request_with_logging_and_errors_raised(func):
     {'error': {'errorCode': '7310', 'errorDesc': 'PIN incorrect. Multiple incorrect attempts will require PIN reset'}, 'responseHeader': {'responseCode': 1, 'responseDesc': 'Failure'}}
     {'error': {'errorCode': '6534', 'errorDesc': 'We apologize, but your daily limit of remote services requests has been exceeded. Your request for <<service name>> was not processed. Please try again tomorrow.'}, 'responseHeader': {'responseCode': 1, 'responseDesc': 'Failure'}}
     """
+
     async def request_with_logging_wrapper(*args, **kwargs):
         url = kwargs["url"]
         json_body = kwargs.get("json_body")
         if json_body is not None:
-            _LOGGER.debug(f"sending {url} request with {clean_dictionary_for_logging(json_body)}")
+            _LOGGER.debug(
+                f"sending {url} request with {clean_dictionary_for_logging(json_body)}"
+            )
         else:
             _LOGGER.debug(f"sending {url} request")
         response = await func(*args, **kwargs)
-        _LOGGER.debug(f"response headers:{clean_dictionary_for_logging(response.headers)}")
+        _LOGGER.debug(
+            f"response headers:{clean_dictionary_for_logging(response.headers)}"
+        )
         try:
             response_json = await response.json()
-            _LOGGER.debug(f"response json:{clean_dictionary_for_logging(response_json)}")
+            _LOGGER.debug(
+                f"response json:{clean_dictionary_for_logging(response_json)}"
+            )
         except RuntimeError:
             response_text = await response.text()
             _LOGGER.debug(f"response text:{response_text}")

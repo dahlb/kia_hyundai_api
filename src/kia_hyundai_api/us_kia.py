@@ -21,14 +21,20 @@ def request_with_logging(func):
         url = kwargs["url"]
         json_body = kwargs.get("json_body")
         if json_body is not None:
-            _LOGGER.debug(f"sending {url} request with {clean_dictionary_for_logging(json_body)}")
+            _LOGGER.debug(
+                f"sending {url} request with {clean_dictionary_for_logging(json_body)}"
+            )
         else:
             _LOGGER.debug(f"sending {url} request")
         response = await func(*args, **kwargs)
-        _LOGGER.debug(f"response headers:{clean_dictionary_for_logging(response.headers)}")
+        _LOGGER.debug(
+            f"response headers:{clean_dictionary_for_logging(response.headers)}"
+        )
         try:
             response_json = await response.json()
-            _LOGGER.debug(f"response json:{clean_dictionary_for_logging(response_json)}")
+            _LOGGER.debug(
+                f"response json:{clean_dictionary_for_logging(response_json)}"
+            )
         except RuntimeError:
             response_text = await response.text()
             _LOGGER.debug(f"response text:{response_text}")
