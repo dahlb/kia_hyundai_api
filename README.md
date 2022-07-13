@@ -2,6 +2,7 @@ Api Wrapper for Kia/Hyundai API using async in python, this was inspired by [thi
 
 a lot of this is a port of [Bluelinky](https://github.com/Hacksore/bluelinky) from node.
 
+WARNING: The US Kia implementation disables SSL cert checking because kia's cert is incompatible with python 3.10 ssl.
 
 # US Kia
 
