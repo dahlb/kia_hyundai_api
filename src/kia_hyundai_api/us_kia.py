@@ -4,7 +4,8 @@ from datetime import datetime
 import random
 import string
 import secrets
-# from ssl import SSLContext, PROTOCOL_TLS_CLIENT # SSLContext(protocol=PROTOCOL_TLS_CLIENT)
+import ssl
+import certifi
 
 import pytz
 import time
@@ -79,6 +80,15 @@ class UsKia:
         else:
             self.api_session = client_session
 
+        new_ssl_context = ssl.create_default_context(capath=certifi.where())
+        new_ssl_context.check_hostname = False
+        new_ssl_context.verify_mode = ssl.CERT_NONE
+        new_ssl_context.set_ciphers("ALL")
+        new_ssl_context.options = (
+                ssl.OP_CIPHER_SERVER_PREFERENCE
+        )
+        self.ssl_context = new_ssl_context
+
     async def cleanup_client_session(self):
         await self.api_session.close()
 
@@ -119,8 +129,7 @@ class UsKia:
             url=url,
             json=json_body,
             headers=headers,
-            ssl=False,
-            verify_ssl=False
+            ssl=self.ssl_context
         )
 
     @request_with_logging
@@ -131,8 +140,7 @@ class UsKia:
         return await self.api_session.get(
             url=url,
             headers=headers,
-            ssl=False,
-            verify_ssl=False
+            ssl=self.ssl_context
         )
 
     async def login(self, username: str, password: str) -> str:

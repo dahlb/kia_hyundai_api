@@ -19,7 +19,7 @@ setup(
     long_description_content_type="text/markdown",
     package_dir={"": "src"},
     packages=find_packages(where="src"),
-    install_requires=["aiohttp>=3.8.1", "pytz"],
+    install_requires=["aiohttp>=3.8.1", "pytz", "certifi"],
     keywords=["Kia", "Uvo", "Api", "Hyundai", "Bluelink"],
     classifiers=[
         "Development Status :: 4 - Beta",
