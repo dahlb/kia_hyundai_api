@@ -119,7 +119,8 @@ class UsKia:
             url=url,
             json=json_body,
             headers=headers,
-            ssl=False
+            ssl=False,
+            verify_ssl=False
         )
 
     @request_with_logging
@@ -130,7 +131,8 @@ class UsKia:
         return await self.api_session.get(
             url=url,
             headers=headers,
-            ssl=False
+            ssl=False,
+            verify_ssl=False
         )
 
     async def login(self, username: str, password: str) -> str:
