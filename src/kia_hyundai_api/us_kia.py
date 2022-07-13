@@ -4,6 +4,7 @@ from datetime import datetime
 import random
 import string
 import secrets
+# from ssl import SSLContext, PROTOCOL_TLS_CLIENT # SSLContext(protocol=PROTOCOL_TLS_CLIENT)
 
 import pytz
 import time
@@ -114,14 +115,23 @@ class UsKia:
         self, session_id: str, vehicle_key: str, url: str, json_body: dict
     ) -> ClientResponse:
         headers = self._api_headers(session_id, vehicle_key)
-        return await self.api_session.post(url=url, json=json_body, headers=headers)
+        return await self.api_session.post(
+            url=url,
+            json=json_body,
+            headers=headers,
+            ssl=False
+        )
 
     @request_with_logging
     async def _get_request_with_logging_and_errors_raised(
         self, session_id: str, vehicle_key: str, url: str
     ) -> ClientResponse:
         headers = self._api_headers(session_id, vehicle_key)
-        return await self.api_session.get(url=url, headers=headers)
+        return await self.api_session.get(
+            url=url,
+            headers=headers,
+            ssl=False
+        )
 
     async def login(self, username: str, password: str) -> str:
         url = self.API_URL + "prof/authUser"
