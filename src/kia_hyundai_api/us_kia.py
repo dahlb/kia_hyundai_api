@@ -80,9 +80,10 @@ class UsKia:
         else:
             self.api_session = client_session
 
-        new_ssl_context = ssl.create_default_context(capath=certifi.where())
-        new_ssl_context.check_hostname = False
-        new_ssl_context.verify_mode = ssl.CERT_NONE
+        new_ssl_context = ssl.create_default_context(cafile=certifi.where())
+        new_ssl_context.load_default_certs()
+        new_ssl_context.check_hostname = True
+        new_ssl_context.verify_mode = ssl.CERT_REQUIRED
         new_ssl_context.set_ciphers("ALL")
         new_ssl_context.options = (
                 ssl.OP_CIPHER_SERVER_PREFERENCE
