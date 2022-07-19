@@ -1,6 +1,8 @@
 import logging
 
 import time
+import ssl
+import certifi
 from aiohttp import ClientSession, ClientResponse, ClientError
 
 from .errors import AuthError, RateError
@@ -108,6 +110,16 @@ class UsHyundai:
         else:
             self.api_session = client_session
 
+        new_ssl_context = ssl.create_default_context(cafile=certifi.where())
+        new_ssl_context.load_default_certs()
+        new_ssl_context.check_hostname = True
+        new_ssl_context.verify_mode = ssl.CERT_REQUIRED
+        new_ssl_context.set_ciphers("ALL")
+        new_ssl_context.options = (
+                ssl.OP_CIPHER_SERVER_PREFERENCE
+        )
+        self.ssl_context = new_ssl_context
+
     async def cleanup_client_session(self):
         await self.api_session.close()
 
@@ -131,7 +143,12 @@ class UsHyundai:
             vehicle_regid=vehicle_regid,
             extra_headers=extra_headers,
         )
-        return await self.api_session.post(url=url, json=json_body, headers=headers)
+        return await self.api_session.post(
+            url=url,
+            json=json_body,
+            headers=headers,
+            ssl=self.ssl_context
+        )
 
     @request_with_logging
     async def _get_request_with_logging_and_errors_raised(
@@ -152,7 +169,11 @@ class UsHyundai:
             vehicle_regid=vehicle_regid,
             extra_headers=extra_headers,
         )
-        return await self.api_session.get(url=url, headers=headers)
+        return await self.api_session.get(
+            url=url,
+            headers=headers,
+            ssl=self.ssl_context
+        )
 
     async def login(
         self, username: str, password: str, pin: str
