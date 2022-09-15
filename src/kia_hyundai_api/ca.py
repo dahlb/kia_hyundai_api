@@ -3,6 +3,8 @@ import logging
 import time
 from abc import ABC, abstractmethod
 from aiohttp import ClientSession, ClientResponse, ClientError
+import ssl
+import certifi
 
 from .errors import RateError, AuthError
 from .const import CA_TEMP_RANGE_ICE_C, CA_TEMP_RANGE_EV_C
@@ -63,6 +65,15 @@ class Ca(ABC):
             self.api_session = ClientSession(raise_for_status=True)
         else:
             self.api_session = client_session
+        new_ssl_context = ssl.create_default_context(cafile=certifi.where())
+        new_ssl_context.load_default_certs()
+        new_ssl_context.check_hostname = True
+        new_ssl_context.verify_mode = ssl.CERT_REQUIRED
+        new_ssl_context.set_ciphers("ALL")
+        new_ssl_context.options = (
+                ssl.OP_CIPHER_SERVER_PREFERENCE
+        )
+        self.ssl_context = new_ssl_context
 
     async def cleanup_client_session(self):
         await self.api_session.close()
@@ -127,7 +138,7 @@ class Ca(ABC):
                 pin_token = pin_token_response["pAuth"]
 
         headers = self._api_headers(access_token, vehicle_id, pin_token, xid)
-        return await self.api_session.post(url=url, json=json_body, headers=headers)
+        return await self.api_session.post(url=url, json=json_body, headers=headers, ssl=self.ssl_context)
 
     async def login(self, username: str, password: str) -> (str, str):
         url = self.api_url + "lgn"
