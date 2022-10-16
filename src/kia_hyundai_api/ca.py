@@ -34,7 +34,7 @@ def request_with_logging_and_errors_raised(func):
             f"response headers:{clean_dictionary_for_logging(response.headers)}"
         )
         try:
-            response_json = await response.json()
+            response_json = await response.json(content_type=None)
             _LOGGER.debug(
                 f"response json:{clean_dictionary_for_logging(response_json)}"
             )
@@ -148,7 +148,7 @@ class Ca(ABC):
                 access_token=None, vehicle_id=None, url=url, json_body=json_body
             )
         )
-        response_json = await response.json()
+        response_json = await response.json(content_type=None)
         access_token = response_json["result"]["accessToken"]
         refresh_token = response_json["result"]["refreshToken"]
         return access_token, refresh_token
@@ -163,7 +163,7 @@ class Ca(ABC):
                 access_token=access_token, vehicle_id=None, url=url
             )
         )
-        response_json = await response.json()
+        response_json = await response.json(content_type=None)
         return response_json["result"]
 
     async def get_cached_vehicle_status(self, access_token: str, vehicle_id: str):
@@ -177,7 +177,7 @@ class Ca(ABC):
         response = await self._post_request_with_logging_and_errors_raised(
             access_token=access_token, vehicle_id=vehicle_id, url=url
         )
-        response_json = await response.json()
+        response_json = await response.json(content_type=None)
         return response_json["result"]
 
     async def get_next_service_status(self, access_token: str, vehicle_id: str):
@@ -190,7 +190,7 @@ class Ca(ABC):
         response = await self._post_request_with_logging_and_errors_raised(
             access_token=access_token, vehicle_id=vehicle_id, url=url
         )
-        response_json = await response.json()
+        response_json = await response.json(content_type=None)
         return response_json["result"]
 
     async def get_pin_token(self, access_token: str, pin: str) -> dict[str, any]:
@@ -199,7 +199,7 @@ class Ca(ABC):
         response = await self._post_request_with_logging_and_errors_raised(
             access_token=access_token, vehicle_id=None, url=url, json_body=json_body
         )
-        response_json = await response.json()
+        response_json = await response.json(content_type=None)
         return response_json["result"]
 
     async def get_location(
@@ -214,7 +214,7 @@ class Ca(ABC):
             url=url,
             json_body=json_body,
         )
-        response_json = await response.json()
+        response_json = await response.json(content_type=None)
         return response_json["result"]
 
     async def request_vehicle_data_sync(self, access_token: str, vehicle_id: str):
@@ -247,7 +247,7 @@ class Ca(ABC):
             pin_token=pin_token,
             xid=xid,
         )
-        response_json = await response.json()
+        response_json = await response.json(content_type=None)
         return response_json["result"]
 
     async def lock(
