@@ -100,7 +100,7 @@ class UsKia:
             "accept-encoding": "gzip, deflate, br",
             "accept-language": "en-US,en;q=0.9",
             "apptype": "L",
-            "appversion": "4.10.0",
+            "appversion": "6.0.1",
             "clientid": "MWAMOBILE",
             "from": "SPA",
             "host": self.BASE_URL,
@@ -198,7 +198,7 @@ class UsKia:
             "vehicleInfoReq": {
                 "drivingActivty": "0",
                 "dtc": "0",
-                "enrollment": "0",
+                "enrollment": "1",
                 "functionalCards": "0",
                 "location": "1",
                 "vehicleStatus": "1",
