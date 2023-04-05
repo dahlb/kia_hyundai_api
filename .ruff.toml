@@ -3,7 +3,7 @@
 target-version = "py310"
 
 exclude = [
-    "stub.py",
+    "*stub.py",
 ]
 
 select = [

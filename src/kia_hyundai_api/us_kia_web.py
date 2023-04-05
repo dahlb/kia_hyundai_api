@@ -1,17 +1,13 @@
 import logging
 
-from datetime import datetime
 import random
 import string
 import secrets
 import json
 
-import pytz
-import time
 
-from aiohttp import ClientSession, ClientResponse, ClientError
+from aiohttp import ClientSession, ClientResponse
 
-from .errors import AuthError
 from .util_http import request_with_logging
 
 _LOGGER = logging.getLogger(__name__)

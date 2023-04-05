@@ -26,7 +26,7 @@ async def testing():
     try:
         session_id = await api.login(username=username, password=password)
         vehicles = await api.get_vehicles(session_id=session_id)
-        identifier = vehicles["vehicleSummary"][0]["vehicleIdentifier"]
+        vehicles["vehicleSummary"][0]["vehicleIdentifier"]
         key = vehicles["vehicleSummary"][0]["vehicleKey"]
         await api.get_cached_vehicle_status(session_id=session_id, vehicle_key=key)
         await api.lock(session_id=session_id, vehicle_key=key)

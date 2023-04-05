@@ -45,10 +45,10 @@ def request_with_logging_and_errors_raised(func):
             return response
         # still need to add error code for expired token
         if response_json["error"]["errorCode"] == "7404":
-            _LOGGER.error(f"invalid password")
+            _LOGGER.error("invalid password")
             raise AuthError(response_json["error"]["errorDesc"])
         if response_json["error"]["errorCode"] == "7310":
-            _LOGGER.error(f"invalid pin")
+            _LOGGER.error("invalid pin")
             raise AuthError(response_json["error"]["errorDesc"])
         if response_json["error"]["errorCode"] in ["6533", "6534"]:
             raise RateError(response_json["error"]["errorDesc"])

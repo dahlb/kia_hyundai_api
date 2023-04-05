@@ -52,7 +52,7 @@ def request_with_logging(func):
                 or response_json["status"]["errorCode"] == 1037
             )
         ):
-            _LOGGER.debug(f"error: session invalid")
+            _LOGGER.debug("error: session invalid")
             raise AuthError
         response_text = await response.text()
         _LOGGER.debug(f"error: unknown error response {response_text}")
