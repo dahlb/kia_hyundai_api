@@ -88,6 +88,7 @@ class UsKia:
         new_ssl_context.options = (
                 ssl.OP_CIPHER_SERVER_PREFERENCE
         )
+        new_ssl_context.options |= 0x4  # OP flag SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION
         self.ssl_context = new_ssl_context
 
     async def cleanup_client_session(self):
