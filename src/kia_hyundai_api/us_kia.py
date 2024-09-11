@@ -1,4 +1,5 @@
 import logging
+import asyncio
 
 from datetime import datetime
 import random
@@ -10,6 +11,7 @@ import certifi
 import pytz
 import time
 
+from functools import partial
 from aiohttp import ClientSession, ClientResponse, ClientError
 
 from .errors import AuthError
@@ -37,31 +39,31 @@ def request_with_logging(func):
             _LOGGER.debug(
                 f"response json:{clean_dictionary_for_logging(response_json)}"
             )
+            if response_json["status"]["statusCode"] == 0:
+                return response
+            if (
+                    response_json["status"]["statusCode"] == 1
+                    and response_json["status"]["errorType"] == 1
+                    and (
+                    response_json["status"]["errorCode"] == 1001
+                    or response_json["status"]["errorCode"] == 1003
+                    or response_json["status"]["errorCode"] == 1005
+                    or response_json["status"]["errorCode"] == 1037
+            )
+            ):
+                _LOGGER.debug("error: session invalid")
+                raise AuthError
+            raise ClientError(f"api error:{response_json['status']['errorMessage']}")
         except RuntimeError:
             response_text = await response.text()
-            _LOGGER.debug(f"response text:{response_text}")
-        if response_json["status"]["statusCode"] == 0:
-            return response
-        if (
-            response_json["status"]["statusCode"] == 1
-            and response_json["status"]["errorType"] == 1
-            and (
-                response_json["status"]["errorCode"] == 1001
-                or response_json["status"]["errorCode"] == 1003
-                or response_json["status"]["errorCode"] == 1005
-                or response_json["status"]["errorCode"] == 1037
-            )
-        ):
-            _LOGGER.debug("error: session invalid")
-            raise AuthError
-        response_text = await response.text()
-        _LOGGER.debug(f"error: unknown error response {response_text}")
-        raise ClientError(f"api error:{response_json['status']['errorMessage']}")
+            _LOGGER.debug(f"error: unknown error response {response_text}")
 
     return request_with_logging_wrapper
 
 
 class UsKia:
+    _ssl_context = None
+
     def __init__(self, client_session: ClientSession = None):
         # Randomly generate a plausible device id on startup
         self.device_id = (
@@ -80,16 +82,20 @@ class UsKia:
         else:
             self.api_session = client_session
 
-        new_ssl_context = ssl.create_default_context(cafile=certifi.where())
-        new_ssl_context.load_default_certs()
-        new_ssl_context.check_hostname = True
-        new_ssl_context.verify_mode = ssl.CERT_REQUIRED
-        new_ssl_context.set_ciphers("DEFAULT@SECLEVEL=1")
-        new_ssl_context.options = (
-                ssl.OP_CIPHER_SERVER_PREFERENCE
-        )
-        new_ssl_context.options |= 0x4  # OP flag SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION
-        self.ssl_context = new_ssl_context
+    async def get_ssl_context(self):
+        if self._ssl_context is None:
+            loop = asyncio.get_running_loop()
+            new_ssl_context = ssl.create_default_context(cafile=certifi.where())
+            await loop.run_in_executor(None, partial(new_ssl_context.load_default_certs))
+            new_ssl_context.check_hostname = True
+            new_ssl_context.verify_mode = ssl.CERT_REQUIRED
+            new_ssl_context.set_ciphers("DEFAULT@SECLEVEL=1")
+            new_ssl_context.options = (
+                    ssl.OP_CIPHER_SERVER_PREFERENCE
+            )
+            new_ssl_context.options |= 0x4  # OP flag SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION
+            self._ssl_context = new_ssl_context
+        return self._ssl_context
 
     async def cleanup_client_session(self):
         await self.api_session.close()
@@ -131,7 +137,7 @@ class UsKia:
             url=url,
             json=json_body,
             headers=headers,
-            ssl=self.ssl_context
+            ssl=await self.get_ssl_context()
         )
 
     @request_with_logging
@@ -142,7 +148,7 @@ class UsKia:
         return await self.api_session.get(
             url=url,
             headers=headers,
-            ssl=self.ssl_context
+            ssl=await self.get_ssl_context()
         )
 
     async def login(self, username: str, password: str) -> str:
