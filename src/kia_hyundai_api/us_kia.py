@@ -85,7 +85,7 @@ class UsKia:
     async def get_ssl_context(self):
         if self._ssl_context is None:
             loop = asyncio.get_running_loop()
-            new_ssl_context = ssl.create_default_context(cafile=certifi.where())
+            new_ssl_context = await loop.run_in_executor(None, partial(ssl.create_default_context, cafile=certifi.where()))
             await loop.run_in_executor(None, partial(new_ssl_context.load_default_certs))
             new_ssl_context.check_hostname = True
             new_ssl_context.verify_mode = ssl.CERT_REQUIRED
