@@ -1,7 +1,7 @@
 setuptools>=42
 wheel
 pip>=8.0.3,<23.1
-ruff==0.0.257
+ruff==0.6.9
 aiohttp>=3.8.1
 pytz
 certifi
