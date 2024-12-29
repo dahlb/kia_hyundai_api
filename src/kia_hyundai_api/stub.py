@@ -1,4 +1,4 @@
-# run with "python3 src/kia_hyundai_api/us_kia_stub.py"
+# run with "python3 src/kia_hyundai_api/stub.py"
 import logging
 import asyncio
 
@@ -20,18 +20,18 @@ logger.addHandler(ch)
 
 
 async def testing():
-    api: UsKia = UsKia()
     username = input("Username: ")
     password = getpass()
+    api: UsKia = UsKia(username=username, password=password)
     try:
-        session_id = await api.login(username=username, password=password)
-        vehicles = await api.get_vehicles(session_id=session_id)
-        logger.debug(vehicles["vehicleSummary"][0]["vehicleIdentifier"])
-        key = vehicles["vehicleSummary"][0]["vehicleKey"]
-        await api.get_cached_vehicle_status(session_id=session_id, vehicle_key=key)
-        await api.lock(session_id=session_id, vehicle_key=key)
+        await api.get_vehicles()
+        vehicle_id = api.vehicles[0]["vehicleIdentifier"]
+        await api.lock(vehicle_id=vehicle_id)
+        while await api.check_last_action_finished(vehicle_id=vehicle_id) is False:
+            await asyncio.sleep(1)
+        await api.unlock(vehicle_id=vehicle_id)
     finally:
-        await api.cleanup_client_session()
+        await api.api_session.close()
 
 
 asyncio.run(testing(), debug=True)

@@ -1,6 +1,3 @@
-CA_TEMP_RANGE_ICE_C = [x * 0.5 for x in range(32, 64)]
-CA_TEMP_RANGE_EV_C = [x * 0.5 for x in range(28, 64)]
-
 SENSITIVE_FIELD_NAMES = [
     "username",
     "password",
@@ -11,3 +8,6 @@ SENSITIVE_FIELD_NAMES = [
     "lat",
     "lon",
 ]
+
+API_URL_HOST = "api.owners.kia.com"
+API_URL_BASE = "https://"+API_URL_HOST+"/apigw/v1/"

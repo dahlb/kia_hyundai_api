@@ -11,3 +11,6 @@ class RateError(BaseError):
 
 class AuthError(BaseError):
     pass
+
+class ActionAlreadyInProgressError(BaseError):
+    pass
