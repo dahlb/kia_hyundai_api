@@ -244,7 +244,7 @@ class UsKia:
     @request_with_active_session
     async def lock(self, vehicle_id: str):
         if await self.check_last_action_finished(vehicle_id=vehicle_id) is False:
-            raise ActionAlreadyInProgressError("%s still pending" % self.last_action["name"])
+            raise ActionAlreadyInProgressError("{} still pending".format(self.last_action["name"]))
         url = API_URL_BASE + "rems/door/lock"
         vehicle_key = await self.find_vehicle_key(vehicle_id=vehicle_id)
         response = await self._get_request_with_logging_and_errors_raised(
@@ -259,7 +259,7 @@ class UsKia:
     @request_with_active_session
     async def unlock(self, vehicle_id: str):
         if await self.check_last_action_finished(vehicle_id=vehicle_id) is False:
-            raise ActionAlreadyInProgressError("%s still pending" % self.last_action["name"])
+            raise ActionAlreadyInProgressError("{} still pending".format(self.last_action["name"]))
         url = API_URL_BASE + "rems/door/unlock"
         vehicle_key = await self.find_vehicle_key(vehicle_id=vehicle_id)
         response = await self._get_request_with_logging_and_errors_raised(
@@ -281,7 +281,7 @@ class UsKia:
             heating: bool,
     ):
         if await self.check_last_action_finished(vehicle_id=vehicle_id) is False:
-            raise ActionAlreadyInProgressError("%s still pending" % self.last_action["name"])
+            raise ActionAlreadyInProgressError("{} still pending".format(self.last_action["name"]))
         url = API_URL_BASE + "rems/start"
         vehicle_key = await self.find_vehicle_key(vehicle_id=vehicle_id)
         body = {
@@ -316,7 +316,7 @@ class UsKia:
     @request_with_active_session
     async def stop_climate(self, vehicle_id: str):
         if await self.check_last_action_finished(vehicle_id=vehicle_id) is False:
-            raise ActionAlreadyInProgressError("%s still pending" % self.last_action["name"])
+            raise ActionAlreadyInProgressError("{} still pending".format(self.last_action["name"]))
         url = API_URL_BASE + "rems/stop"
         vehicle_key = await self.find_vehicle_key(vehicle_id=vehicle_id)
         response = await self._get_request_with_logging_and_errors_raised(
@@ -331,7 +331,7 @@ class UsKia:
     @request_with_active_session
     async def start_charge(self, vehicle_id: str):
         if await self.check_last_action_finished(vehicle_id=vehicle_id) is False:
-            raise ActionAlreadyInProgressError("%s still pending" % self.last_action["name"])
+            raise ActionAlreadyInProgressError("{} still pending".format(self.last_action["name"]))
         url = API_URL_BASE + "evc/charge"
         vehicle_key = await self.find_vehicle_key(vehicle_id=vehicle_id)
         body = {"chargeRatio": 100}
@@ -348,7 +348,7 @@ class UsKia:
     @request_with_active_session
     async def stop_charge(self, vehicle_id: str):
         if await self.check_last_action_finished(vehicle_id=vehicle_id) is False:
-            raise ActionAlreadyInProgressError("%s still pending" % self.last_action["name"])
+            raise ActionAlreadyInProgressError("{} still pending".format(self.last_action["name"]))
         url = API_URL_BASE + "evc/cancel"
         vehicle_key = await self.find_vehicle_key(vehicle_id=vehicle_id)
         response = await self._get_request_with_logging_and_errors_raised(
@@ -368,7 +368,7 @@ class UsKia:
             dc_limit: int,
     ):
         if await self.check_last_action_finished(vehicle_id=vehicle_id) is False:
-            raise ActionAlreadyInProgressError("%s still pending" % self.last_action["name"])
+            raise ActionAlreadyInProgressError("{} still pending".format(self.last_action["name"]))
         url = API_URL_BASE + "evc/sts"
         vehicle_key = await self.find_vehicle_key(vehicle_id=vehicle_id)
         body = {
