@@ -26,6 +26,7 @@ async def testing():
     try:
         await api.get_vehicles()
         vehicle_id = api.vehicles[0]["vehicleIdentifier"]
+        logger.debug(await api.get_cached_vehicle_status(vehicle_id=vehicle_id))
         await api.lock(vehicle_id=vehicle_id)
         while await api.check_last_action_finished(vehicle_id=vehicle_id) is False:
             await asyncio.sleep(1)

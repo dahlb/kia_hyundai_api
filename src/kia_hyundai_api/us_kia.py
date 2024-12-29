@@ -200,7 +200,7 @@ class UsKia:
             json_body=body,
         )
         response_json = await response.json()
-        return response_json["payload"]
+        return response_json["payload"]["vehicleInfoList"][0]
 
     @request_with_active_session
     async def request_vehicle_data_sync(self, vehicle_id: str):
