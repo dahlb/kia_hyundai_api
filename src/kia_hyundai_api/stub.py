@@ -25,6 +25,7 @@ async def testing():
     api: UsKia = UsKia(username=username, password=password)
     try:
         await api.get_vehicles()
+        logger.debug(f"vehicles:{api.vehicles}")
         vehicle_id = api.vehicles[0]["vehicleIdentifier"]
         logger.debug(await api.get_cached_vehicle_status(vehicle_id=vehicle_id))
         await api.lock(vehicle_id=vehicle_id)
