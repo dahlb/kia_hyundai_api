@@ -65,7 +65,7 @@ class UsKia:
             "accept-encoding": "gzip, deflate, br",
             "accept-language": "en-US,en;q=0.9",
             "apptype": "L",
-            "appversion": "6.0.1",
+            "appversion": "7.12.1",
             "clientid": "MWAMOBILE",
             "from": "SPA",
             "host": API_URL_HOST,
@@ -76,7 +76,7 @@ class UsKia:
             "secretkey": "98er-w34rf-ibf3-3f6h",
             "to": "APIGW",
             "tokentype": "G",
-            "user-agent": "okhttp/3.12.1",
+            "user-agent": "okhttp/4.10.0",
             "deviceid": self.device_id,
             "date": datetime.now(tz=pytz.utc).strftime("%a, %d %b %Y %H:%M:%S GMT"),
         }
