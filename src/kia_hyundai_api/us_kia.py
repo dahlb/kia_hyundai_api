@@ -271,6 +271,51 @@ class UsKia:
             "xid": response.headers["Xid"]
         }
 
+    def _seat_settings(self, level) -> dict:
+        """Derive the seat settings from an integer."""
+        if level == 6:  # High heat
+            return {
+                "heatVentType": 1,
+                "heatVentLevel": 4,
+                "heatVentStep": 1,
+            }
+        elif level == 5:  # Medium heat
+            return {
+                "heatVentType": 1,
+                "heatVentLevel": 3,
+                "heatVentStep": 2,
+            }
+        elif level == 4:  # Low heat
+            return {
+                "heatVentType": 1,
+                "heatVentLevel": 2,
+                "heatVentStep": 3,
+            }
+        elif level == 3:  # High cool
+            return {
+                "heatVentType": 2,
+                "heatVentLevel": 4,
+                "heatVentStep": 1,
+            }
+        elif level == 2:  # Medium cool
+            return {
+                "heatVentType": 2,
+                "heatVentLevel": 3,
+                "heatVentStep": 2,
+            }
+        elif level == 1:  # Low cool
+            return {
+                "heatVentType": 2,
+                "heatVentLevel": 2,
+                "heatVentStep": 3,
+            }
+        else:  # Off
+            return {
+                "heatVentType": 0,
+                "heatVentLevel": 1,
+                "heatVentStep": 0,
+            }
+
     @request_with_active_session
     async def start_climate(
             self,
@@ -279,6 +324,10 @@ class UsKia:
             defrost: bool,
             climate: bool,
             heating: bool,
+            driver_seat: int = 0,
+            passenger_seat: int = 0,
+            left_rear_seat: int = 0,
+            right_rear_seat:int = 0,
     ):
         if await self.check_last_action_finished(vehicle_id=vehicle_id) is False:
             raise ActionAlreadyInProgressError("{} still pending".format(self.last_action["name"]))
@@ -291,11 +340,17 @@ class UsKia:
                     "unit": 1,
                     "value": str(set_temp),
                 },
+                "heatVentSeat": {
+                    "driverSeat": self._seat_settings(driver_seat),
+                    "passengerSeat": self._seat_settings(passenger_seat),
+                    "rearLeftSeat": self._seat_settings(left_rear_seat),
+                    "rearRightSeat": self._seat_settings(right_rear_seat)
+                },
                 "defrost": defrost,
                 "heatingAccessory": {
                     "rearWindow": int(heating),
                     "sideMirror": int(heating),
-                    "steeringWheel": int(heating),
+                    "steeringWheel": int(heating)
                 },
                 "ignitionOnDuration": {
                     "unit": 4,
