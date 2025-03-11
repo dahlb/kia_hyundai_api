@@ -350,7 +350,7 @@ class UsKia:
                 "heatingAccessory": {
                     "rearWindow": int(heating),
                     "sideMirror": int(heating),
-                    "steeringWheel": int(heating)
+                    "steeringWheel": int(heating),
                 },
                 "ignitionOnDuration": {
                     "unit": 4,
