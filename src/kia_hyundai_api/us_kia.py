@@ -15,7 +15,7 @@ from functools import partial
 from aiohttp import ClientSession, ClientResponse
 
 from .errors import AuthError, ActionAlreadyInProgressError
-from .const import API_URL_BASE, API_URL_HOST
+from .const import API_URL_BASE, API_URL_HOST, SeatSettings
 from .util_http import request_with_logging, request_with_active_session
 
 _LOGGER = logging.getLogger(__name__)
@@ -324,10 +324,10 @@ class UsKia:
             defrost: bool,
             climate: bool,
             heating: bool,
-            driver_seat: int = 0,
-            passenger_seat: int = 0,
-            left_rear_seat: int = 0,
-            right_rear_seat:int = 0,
+            driver_seat: SeatSettings | None = None,
+            passenger_seat: SeatSettings | None = None,
+            left_rear_seat: SeatSettings | None = None,
+            right_rear_seat: SeatSettings | None = None,
     ):
         if await self.check_last_action_finished(vehicle_id=vehicle_id) is False:
             raise ActionAlreadyInProgressError("{} still pending".format(self.last_action["name"]))
@@ -339,12 +339,6 @@ class UsKia:
                 "airTemp": {
                     "unit": 1,
                     "value": str(set_temp),
-                },
-                "heatVentSeat": {
-                    "driverSeat": self._seat_settings(driver_seat),
-                    "passengerSeat": self._seat_settings(passenger_seat),
-                    "rearLeftSeat": self._seat_settings(left_rear_seat),
-                    "rearRightSeat": self._seat_settings(right_rear_seat)
                 },
                 "defrost": defrost,
                 "heatingAccessory": {
@@ -358,6 +352,18 @@ class UsKia:
                 },
             }
         }
+        if (
+            driver_seat is not None
+            or passenger_seat is not None
+            or left_rear_seat is not None
+            or right_rear_seat is not None
+        ):
+            body["remoteClimate"]["heatVentSeat"] = {
+                "driverSeat": self._seat_settings(driver_seat),
+                "passengerSeat": self._seat_settings(passenger_seat),
+                "rearLeftSeat": self._seat_settings(left_rear_seat),
+                "rearRightSeat": self._seat_settings(right_rear_seat),
+                }
         response = await self._post_request_with_logging_and_errors_raised(
             vehicle_key=vehicle_key,
             url=url,
