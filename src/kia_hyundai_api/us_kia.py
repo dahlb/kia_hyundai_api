@@ -272,43 +272,51 @@ class UsKia:
             "xid": response.headers["Xid"]
         }
 
-    def _seat_settings(self, level) -> dict:
+    def _seat_settings(self, level: SeatSettings | None) -> dict:
         """Derive the seat settings from an integer."""
-        if level == 6:  # High heat
-            return {
-                "heatVentType": 1,
-                "heatVentLevel": 4,
-                "heatVentStep": 1,
-            }
-        elif level == 5:  # Medium heat
-            return {
-                "heatVentType": 1,
-                "heatVentLevel": 3,
-                "heatVentStep": 2,
-            }
-        elif level == 4:  # Low heat
-            return {
-                "heatVentType": 1,
-                "heatVentLevel": 2,
-                "heatVentStep": 3,
-            }
-        elif level == 3:  # High cool
-            return {
-                "heatVentType": 2,
-                "heatVentLevel": 4,
-                "heatVentStep": 1,
-            }
-        elif level == 2:  # Medium cool
-            return {
-                "heatVentType": 2,
-                "heatVentLevel": 3,
-                "heatVentStep": 2,
-            }
-        elif level == 1:  # Low cool
-            return {
-                "heatVentType": 2,
-                "heatVentLevel": 2,
-                "heatVentStep": 3,
+        if level is not None:
+            level = level.value
+            if level == 6:  # High heat
+                return {
+                    "heatVentType": 1,
+                    "heatVentLevel": 4,
+                    "heatVentStep": 1,
+                }
+            elif level == 5:  # Medium heat
+                return {
+                    "heatVentType": 1,
+                    "heatVentLevel": 3,
+                    "heatVentStep": 2,
+                }
+            elif level == 4:  # Low heat
+                return {
+                    "heatVentType": 1,
+                    "heatVentLevel": 2,
+                    "heatVentStep": 3,
+                }
+            elif level == 3:  # High cool
+                return {
+                    "heatVentType": 2,
+                    "heatVentLevel": 4,
+                    "heatVentStep": 1,
+                }
+            elif level == 2:  # Medium cool
+                return {
+                    "heatVentType": 2,
+                    "heatVentLevel": 3,
+                    "heatVentStep": 2,
+                }
+            elif level == 1:  # Low cool
+                return {
+                    "heatVentType": 2,
+                    "heatVentLevel": 2,
+                    "heatVentStep": 3,
+                }
+            else:  # Off
+                return {
+                "heatVentType": 0,
+                "heatVentLevel": 1,
+                "heatVentStep": 0,
             }
         else:  # Off
             return {
