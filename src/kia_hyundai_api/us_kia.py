@@ -21,6 +21,53 @@ from .util_http import request_with_logging, request_with_active_session
 _LOGGER = logging.getLogger(__name__)
 
 
+def _seat_settings(level: SeatSettings | None) -> dict:
+    """Derive the seat settings from a seat setting enum."""
+    match level:
+        case SeatSettings.HeatHigh:
+            return {
+                "heatVentType": 1,
+                "heatVentLevel": 4,
+                "heatVentStep": 1,
+            }
+        case SeatSettings.HeatMedium:
+            return {
+                "heatVentType": 1,
+                "heatVentLevel": 3,
+                "heatVentStep": 2,
+            }
+        case SeatSettings.HeatLow:
+            return {
+                "heatVentType": 1,
+                "heatVentLevel": 2,
+                "heatVentStep": 3,
+            }
+        case SeatSettings.CoolHigh:
+            return {
+                "heatVentType": 2,
+                "heatVentLevel": 4,
+                "heatVentStep": 1,
+            }
+        case SeatSettings.CoolMedium:
+            return {
+                "heatVentType": 2,
+                "heatVentLevel": 3,
+                "heatVentStep": 2,
+            }
+        case SeatSettings.CoolLow:
+            return {
+                "heatVentType": 2,
+                "heatVentLevel": 2,
+                "heatVentStep": 3,
+            }
+        case _:
+            return {
+                "heatVentType": 0,
+                "heatVentLevel": 1,
+                "heatVentStep": 0,
+            }
+
+
 class UsKia:
     _ssl_context = None
     session_id: str | None = None
@@ -272,51 +319,6 @@ class UsKia:
             "xid": response.headers["Xid"]
         }
 
-    def _seat_settings(self, level) -> dict:
-        """Derive the seat settings from an integer."""
-        if level == 6:  # High heat
-            return {
-                "heatVentType": 1,
-                "heatVentLevel": 4,
-                "heatVentStep": 1,
-            }
-        elif level == 5:  # Medium heat
-            return {
-                "heatVentType": 1,
-                "heatVentLevel": 3,
-                "heatVentStep": 2,
-            }
-        elif level == 4:  # Low heat
-            return {
-                "heatVentType": 1,
-                "heatVentLevel": 2,
-                "heatVentStep": 3,
-            }
-        elif level == 3:  # High cool
-            return {
-                "heatVentType": 2,
-                "heatVentLevel": 4,
-                "heatVentStep": 1,
-            }
-        elif level == 2:  # Medium cool
-            return {
-                "heatVentType": 2,
-                "heatVentLevel": 3,
-                "heatVentStep": 2,
-            }
-        elif level == 1:  # Low cool
-            return {
-                "heatVentType": 2,
-                "heatVentLevel": 2,
-                "heatVentStep": 3,
-            }
-        else:  # Off
-            return {
-                "heatVentType": 0,
-                "heatVentLevel": 1,
-                "heatVentStep": 0,
-            }
-
     @request_with_active_session
     async def start_climate(
             self,
@@ -360,10 +362,10 @@ class UsKia:
             or right_rear_seat is not None
         ):
             body["remoteClimate"]["heatVentSeat"] = {
-                "driverSeat": self._seat_settings(driver_seat),
-                "passengerSeat": self._seat_settings(passenger_seat),
-                "rearLeftSeat": self._seat_settings(left_rear_seat),
-                "rearRightSeat": self._seat_settings(right_rear_seat),
+                "driverSeat": _seat_settings(driver_seat),
+                "passengerSeat": _seat_settings(passenger_seat),
+                "rearLeftSeat": _seat_settings(left_rear_seat),
+                "rearRightSeat": _seat_settings(right_rear_seat),
                 }
         response = await self._post_request_with_logging_and_errors_raised(
             vehicle_key=vehicle_key,
