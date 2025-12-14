@@ -6,6 +6,7 @@ import random
 import string
 import secrets
 import ssl
+from typing import Callable
 import certifi
 
 import pytz
@@ -15,7 +16,7 @@ from functools import partial
 from aiohttp import ClientSession, ClientResponse
 
 from .errors import AuthError, ActionAlreadyInProgressError
-from .const import API_URL_BASE, API_URL_HOST, SeatSettings
+from .const import API_URL_BASE, API_URL_HOST, LOGIN_TOKEN_LIFETIME, SeatSettings
 from .util_http import request_with_logging, request_with_active_session
 
 _LOGGER = logging.getLogger(__name__)
@@ -71,20 +72,47 @@ def _seat_settings(level: SeatSettings | None) -> dict:
 class UsKia:
     _ssl_context = None
     session_id: str | None = None
+    otp_key: str | None = None
+    notify_type: str | None = None
     vehicles: list[dict] | None = None
     last_action = None
 
-    def __init__(self, username: str, password: str, client_session: ClientSession = None):
+    def __init__(
+            self,
+            username: str,
+            password: str,
+            otp_callback: Callable[[dict], dict],
+            device_id: str | None = None,
+            refresh_token: str | None = None,
+            client_session: ClientSession = None
+                ):
+        """Login into cloud endpoints
+        Parameters
+        ----------
+        username : str
+            User email address
+        password : str
+            User password
+        token : Token, optional
+            Existing token with stored rmtoken for reuse
+        device_id : reused , optional
+        otp_callback : Callable[[dict], dict], optional
+            Non-interactive OTP handler. Called twice:
+            - stage='choose_destination' -> return {'notify_type': 'EMAIL'|'SMS'}
+            - stage='input_code' -> return {'otp_code': '<code>'}
+        """
+        self.username = username
+        self.password = password
+        self.otp_callback = otp_callback
         # Randomly generate a plausible device id on startup
-        self.device_id = (
+        self.device_id = device_id or (
             "".join(
                 random.choice(string.ascii_letters + string.digits) for _ in range(22)
             )
             + ":"
             + secrets.token_urlsafe(105)
         )
-        self.username = username
-        self.password = password
+        self.refresh_token = refresh_token
         if client_session is None:
             self.api_session = ClientSession(raise_for_status=True)
         else:
@@ -105,7 +133,7 @@ class UsKia:
             self._ssl_context = new_ssl_context
         return self._ssl_context
 
-    def _api_headers(self, vehicle_key: str = None) -> dict:
+    def _api_headers(self, vehicle_key: str | None = None) -> dict:
         headers = {
             "content-type": "application/json;charset=UTF-8",
             "accept": "application/json, text/plain, */*",
@@ -129,6 +157,18 @@ class UsKia:
         }
         if self.session_id is not None:
             headers["sid"] = self.session_id
+        if self.refresh_token is not None:
+            headers["rmtoken"] = self.refresh_token
+        if self.otp_key is not None:
+            headers["otpkey"] = self.otp_key
+            if self.notify_type is not None:
+                headers["notifytype"] = self.notify_type
+            else:
+                raise ValueError("notify_type must be set before sending OTP")
+            if self.last_action is not None and "xid" in self.last_action:
+                headers["xid"] = self.last_action["xid"]
+            else:
+                raise ValueError("xid(last_action) must be set before sending OTP")
         if vehicle_key is not None:
             headers["vinkey"] = vehicle_key
         return headers
@@ -167,7 +207,62 @@ class UsKia:
             ssl=await self.get_ssl_context()
         )
 
+    async def _send_otp(self, notify_type: str) -> dict:
+        """
+        Send OTP to email or phone
+
+        Parameters
+        notify_type = "EMAIL" or "SMS"
+        """
+        if notify_type not in ("EMAIL", "SMS"):
+            raise ValueError(f"Invalid notify_type {notify_type}")
+        if self.otp_key is None:
+            raise ValueError(f"OTP key required")
+        url = API_URL_BASE + "cmm/sendOTP"
+        self.notify_type = notify_type
+        response: ClientResponse = (
+            await self._post_request_with_logging_and_errors_raised(
+                vehicle_key=None,
+                url=url,
+                json_body={},
+                authed=False,
+            )
+        )
+        _LOGGER.debug(f"Send OTP Response {response.text}")
+        return await response.json()
+
+    async def _verify_otp(self, otp_code: str):
+        """Verify OTP code and return sid and rmtoken"""
+        url = API_URL_BASE + "cmm/verifyOTP"
+        data = {"otp": otp_code}
+        response: ClientResponse = (
+            await self._post_request_with_logging_and_errors_raised(
+                vehicle_key=None,
+                url=url,
+                json_body=data,
+                authed=False,
+            )
+        )
+        self.last_action = None
+        self.otp_key = None
+        self.notify_type = None
+        _LOGGER.debug(f"Verify OTP Response {response.text}")
+        response_json = await response.json()
+        if response_json["status"]["statusCode"] != 0:
+            raise Exception(
+                f"OTP verification failed: {response_json['status']['errorMessage']}"
+            )
+        session_id = response.headers.get("sid")
+        rmtoken = response.headers.get("rmtoken")
+        if not session_id or not rmtoken:
+            raise AuthError(
+                f"No session_id or rmtoken in OTP verification response. Headers: {response.headers}"
+            )
+        self.session_id = session_id
+        self.refresh_token = rmtoken
+    
     async def login(self):
+        """ Login into cloud endpoints """
         url = API_URL_BASE + "prof/authUser"
         data = {
             "deviceKey": "",
@@ -182,13 +277,60 @@ class UsKia:
                 authed=False,
             )
         )
+        _LOGGER.debug(f"Complete Login Response {response.text}")
         self.session_id = response.headers.get("sid")
-        if not self.session_id:
-            response_text = await response.text()
-            raise AuthError(
-                f"no session id returned in login. Response: {response_text} headers {response.headers} cookies {response.cookies}"
-            )
-        _LOGGER.debug(f"got session id {self.session_id}")
+        _LOGGER.debug(f"Session ID {self.session_id}")
+        if self.session_id:
+            _LOGGER.debug(f"got session id {self.session_id}")
+            return
+        response_json = await response.json()
+        if "payload" in response_json and "otpKey" in response_json["payload"]:
+            payload = response_json["payload"]
+            if payload.get("rmTokenExpired"):
+                _LOGGER.info(f"Stored rmtoken has expired, need new OTP")
+                self.refresh_token = None
+            try:
+                self.otp_key = payload["otpKey"]
+                self.last_action = {
+                    "name": "one_time_password",
+                    "xid": response.headers.get("xid", None),
+                }
+                _LOGGER.info(f"OTP required for login")
+                ctx_choice = {
+                    "stage": "choose_destination",
+                    "hasEmail": bool(payload.get("hasEmail")),
+                    "hasPhone": bool(payload.get("hasPhone")),
+                    "email": payload.get("email", 'N/A'),
+                    "phone": payload.get("phone", 'N/A'),
+                }
+                _LOGGER.debug(f"OTP callback stage choice args: {ctx_choice}")
+                callback_response = self.otp_callback(ctx_choice)
+                _LOGGER.debug(f"OTP callback response {callback_response}")
+                notify_type = str(callback_response.get("notify_type", "EMAIL")).upper()
+                await self._send_otp(notify_type)
+                otp_code = None
+                ctx_code = {
+                    "stage": "input_code",
+                    "notify_type": notify_type,
+                    "otpKey": self.otp_key,
+                    "xid": self.last_action["xid"],
+                }
+                _LOGGER.debug(f"OTP callback stage input args: {ctx_code}")
+                otp_callback_response = self.otp_callback(ctx_code)
+                otp_code = str(otp_callback_response.get("otp_code", "")).strip()
+                if not otp_code:
+                    raise AuthError(f"OTP code required")
+                await self._verify_otp(otp_code)
+                await self.login()
+                return
+            finally:
+                self.otp_key = None
+                self.last_action = None
+                self.notify_type = None
+        raise AuthError(
+                f"No session id returned in login. Response: {response.text} headers {response.headers} cookies {response.cookies}"
+                        )
+
 
     @request_with_active_session
     async def get_vehicles(self):
@@ -208,6 +350,8 @@ class UsKia:
     async def find_vehicle_key(self, vehicle_id: str):
         if self.vehicles is None:
             await self.get_vehicles()
+        if self.vehicles is None:
+            raise ValueError("no vehicles found")
         for vehicle in self.vehicles:
             if vehicle["vehicleIdentifier"] == vehicle_id:
                 return vehicle["vehicleKey"]

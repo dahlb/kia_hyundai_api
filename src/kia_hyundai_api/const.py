@@ -14,7 +14,6 @@ SENSITIVE_FIELD_NAMES = [
 API_URL_HOST = "api.owners.kia.com"
 API_URL_BASE = "https://"+API_URL_HOST+"/apigw/v1/"
 
-
 class SeatSettings(Enum):
     """Class to hold seat settings."""
 
