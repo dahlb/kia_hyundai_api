@@ -16,7 +16,7 @@ from functools import partial
 from aiohttp import ClientSession, ClientResponse
 
 from .errors import AuthError, ActionAlreadyInProgressError
-from .const import API_URL_BASE, API_URL_HOST, LOGIN_TOKEN_LIFETIME, SeatSettings
+from .const import API_URL_BASE, API_URL_HOST, SeatSettings
 from .util_http import request_with_logging, request_with_active_session
 
 _LOGGER = logging.getLogger(__name__)
