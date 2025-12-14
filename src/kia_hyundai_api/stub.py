@@ -22,7 +22,7 @@ logger.addHandler(ch)
 async def testing():
     username = input("Username: ")
     password = getpass()
-    def callback (kwargs: dict) -> dict:
+    async def callback (kwargs: dict) -> dict:
         logger.debug(f"callback called with data:{kwargs}")
         if kwargs["stage"] == "input_code":
             return {"otp_code": input("OTP: ")}

@@ -7,6 +7,8 @@ import string
 import secrets
 import ssl
 from collections.abc import Callable
+from typing import Any
+from collections.abc import Coroutine
 import certifi
 
 import pytz
@@ -81,10 +83,10 @@ class UsKia:
             self,
             username: str,
             password: str,
-            otp_callback: Callable[[dict], dict],
+            otp_callback: Callable[..., Coroutine[Any, Any, Any]],
             device_id: str | None = None,
             refresh_token: str | None = None,
-            client_session: ClientSession = None
+            client_session: ClientSession | None = None
                 ):
         """Login into cloud endpoints
         Parameters
@@ -96,7 +98,7 @@ class UsKia:
         token : Token, optional
             Existing token with stored rmtoken for reuse
         device_id : reused , optional
-        otp_callback : Callable[[dict], dict], optional
+        otp_callback : Callable[..., Coroutine[Any, Any, Any]]
             Non-interactive OTP handler. Called twice:
             - stage='choose_destination' -> return {'notify_type': 'EMAIL'|'SMS'}
             - stage='input_code' -> return {'otp_code': '<code>'}
@@ -304,7 +306,7 @@ class UsKia:
                     "phone": payload.get("phone", 'N/A'),
                 }
                 _LOGGER.debug(f"OTP callback stage choice args: {ctx_choice}")
-                callback_response = self.otp_callback(ctx_choice)
+                callback_response = await self.otp_callback(ctx_choice)
                 _LOGGER.debug(f"OTP callback response {callback_response}")
                 notify_type = str(callback_response.get("notify_type", "EMAIL")).upper()
                 await self._send_otp(notify_type)
@@ -316,7 +318,7 @@ class UsKia:
                     "xid": self.last_action["xid"],
                 }
                 _LOGGER.debug(f"OTP callback stage input args: {ctx_code}")
-                otp_callback_response = self.otp_callback(ctx_code)
+                otp_callback_response = await self.otp_callback(ctx_code)
                 otp_code = str(otp_callback_response.get("otp_code", "")).strip()
                 if not otp_code:
                     raise AuthError("OTP code required")
