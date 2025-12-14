@@ -230,7 +230,7 @@ class UsKia:
                 authed=False,
             )
         )
-        _LOGGER.debug(f"Send OTP Response {response.text}")
+        _LOGGER.debug(f"Send OTP Response {await response.text()}")
         return await response.json()
 
     async def _verify_otp(self, otp_code: str):
@@ -248,20 +248,20 @@ class UsKia:
         self.last_action = None
         self.otp_key = None
         self.notify_type = None
-        _LOGGER.debug(f"Verify OTP Response {response.text}")
+        _LOGGER.debug(f"Verify OTP Response {await response.text()}")
         response_json = await response.json()
         if response_json["status"]["statusCode"] != 0:
             raise Exception(
                 f"OTP verification failed: {response_json['status']['errorMessage']}"
             )
         session_id = response.headers.get("sid")
-        rmtoken = response.headers.get("rmtoken")
-        if not session_id or not rmtoken:
+        refresh_token = response.headers.get("rmtoken")
+        if not session_id or not refresh_token:
             raise AuthError(
                 f"No session_id or rmtoken in OTP verification response. Headers: {response.headers}"
             )
         self.session_id = session_id
-        self.refresh_token = rmtoken
+        self.refresh_token = refresh_token
 
     async def login(self):
         """ Login into cloud endpoints """
@@ -279,7 +279,7 @@ class UsKia:
                 authed=False,
             )
         )
-        _LOGGER.debug(f"Complete Login Response {response.text}")
+        _LOGGER.debug(f"Complete Login Response {await response.text()}")
         self.session_id = response.headers.get("sid")
         _LOGGER.debug(f"Session ID {self.session_id}")
         if self.session_id:
@@ -330,7 +330,7 @@ class UsKia:
                 self.last_action = None
                 self.notify_type = None
         raise AuthError(
-                f"No session id returned in login. Response: {response.text} headers {response.headers} cookies {response.cookies}"
+                f"No session id returned in login. Response: {await response.text()} headers {response.headers} cookies {response.cookies}"
                         )
 
 
