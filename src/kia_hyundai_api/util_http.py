@@ -54,10 +54,11 @@ def request_with_logging(func):
                     response_json["status"]["errorCode"] == 1003
                     or response_json["status"]["errorCode"] == 1005 # invalid vehicle key for current session
                     or response_json["status"]["errorCode"] == 1037
+                    or response_json["status"]["errorCode"] == 1165 # invalid otp code
                 )
             ):
                 _LOGGER.debug("error: session invalid")
-                raise AuthError
+                raise AuthError(f"api error:{response_json['status']['errorMessage']}")
             if (
                 response_json["status"]["statusCode"] == 1
                 and response_json["status"]["errorType"] == 1
