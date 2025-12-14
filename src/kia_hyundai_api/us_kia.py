@@ -6,7 +6,7 @@ import random
 import string
 import secrets
 import ssl
-from typing import Callable
+from collections.abc import Callable
 import certifi
 
 import pytz
@@ -217,7 +217,7 @@ class UsKia:
         if notify_type not in ("EMAIL", "SMS"):
             raise ValueError(f"Invalid notify_type {notify_type}")
         if self.otp_key is None:
-            raise ValueError(f"OTP key required")
+            raise ValueError("OTP key required")
         url = API_URL_BASE + "cmm/sendOTP"
         self.notify_type = notify_type
         response: ClientResponse = (
@@ -260,7 +260,7 @@ class UsKia:
             )
         self.session_id = session_id
         self.refresh_token = rmtoken
-    
+
     async def login(self):
         """ Login into cloud endpoints """
         url = API_URL_BASE + "prof/authUser"
@@ -287,7 +287,7 @@ class UsKia:
         if "payload" in response_json and "otpKey" in response_json["payload"]:
             payload = response_json["payload"]
             if payload.get("rmTokenExpired"):
-                _LOGGER.info(f"Stored rmtoken has expired, need new OTP")
+                _LOGGER.info("Stored rmtoken has expired, need new OTP")
                 self.refresh_token = None
             try:
                 self.otp_key = payload["otpKey"]
@@ -295,7 +295,7 @@ class UsKia:
                     "name": "one_time_password",
                     "xid": response.headers.get("xid", None),
                 }
-                _LOGGER.info(f"OTP required for login")
+                _LOGGER.info("OTP required for login")
                 ctx_choice = {
                     "stage": "choose_destination",
                     "hasEmail": bool(payload.get("hasEmail")),
@@ -319,7 +319,7 @@ class UsKia:
                 otp_callback_response = self.otp_callback(ctx_code)
                 otp_code = str(otp_callback_response.get("otp_code", "")).strip()
                 if not otp_code:
-                    raise AuthError(f"OTP code required")
+                    raise AuthError("OTP code required")
                 await self._verify_otp(otp_code)
                 await self.login()
                 return
